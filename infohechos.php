@@ -13,22 +13,12 @@ if($con->connect_error){
 //$sql="SELECT * FROM problema INNER JOIN concurso ON problema.id_conc=concurso.id_conc INNER JOIN usuario ON problema.id_usuario=usuario.id_user LEFT JOIN tag_problema ON tag_problema.id_pr = problema.id_pr ORDER BY problema.id_pr";
 
 $sql = "SELECT 
-            tarea.id_tarea AS id, tarea.nombre AS nombre, tarea.descr AS descr, tarea.fechalim AS deadline, tarea.hecho AS hecho, tipo.nombre AS materia, tipo.color AS color
-        FROM tarea
-        INNER JOIN tipo ON tarea.id_tipo=tipo.id_tipo 
-        WHERE hecho=false
-        ORDER BY deadline ASC";
+           prob.id_prob as id, prob.titulo as titulo, prob.link as enlace, tipo.nombre as fuente, tipo.color as color
+        FROM prob
+        INNER JOIN tipo ON prob.id_tipo=tipo.id_tipo 
+        WHERE hecho=true";
 $result= $con->query($sql);
 
-$sql1 ="SELECT COUNT(*) AS tareas_proximas FROM tarea WHERE fechalim= CURDATE() AND hecho=false";
-$result1=$con->query($sql1);
-$fila1=$result1->fetch_assoc();
-$sql1= "SELECT COUNT(*) AS tareas_proximas FROM tarea WHERE fechalim>= CURDATE() AND fechalim < DATE_ADD(CURDATE(), INTERVAL 7 DAY) AND hecho=false";
-$result2=$con->query($sql1);
-$fila2=$result2->fetch_assoc();
-$sql1= "SELECT COUNT(*) AS tareas_proximas FROM tarea WHERE hecho=false";
-$result3=$con->query($sql1);
-$fila3=$result3->fetch_assoc();
 ?>
 
 <html>
@@ -107,36 +97,22 @@ $fila3=$result3->fetch_assoc();
         </div>
         
         <div style="display:flex; justify-content:center; gap:10px">
-            <form action="agregartarea.php" method="post">
-                <input type="submit" value="Agregar Tarea" class="boton">
+            <form action="agregarinfo.php" method="post">
+                <input type="submit" value="Agregar Problema" class="boton">
+            </form>
+              <form action="info.php" method="post">
+                <input type="submit" value="Problemas no hechos" class="boton">
             </form>
          
 
         </div>
         
-        <table>
-            <tr>
-                <th>Pendientes HOY</th>
-                <th> Pendientes los siguientes 7 dias</th>
-                <th> Pendientes en total</th>
-            </tr>
-            <tr class="grande">
-                <td><?php echo $fila1['tareas_proximas'];?></td>
-                <td><?php echo $fila2['tareas_proximas'];?></td>
-                <td><?php echo $fila3['tareas_proximas'];?></td>
-            </tr>
-
-        </table>
 
          <table>
             <tr>
-                <th> Materia </th>
-                <th> Nombre </th>
-                <th> Descripcion </th>
-                <th> Deadline </th>
-                <th> Hecho </th>
-                <th> Editar </th>
-
+                <th> Lugar </th>
+                <th> Titulo </th>
+                <th> No hecho </th>
             </tr>
 
             
@@ -153,22 +129,15 @@ $fila3=$result3->fetch_assoc();
                             border-radius: 8px;
                             font-family: Arial, sans-serif;
                             font-size: 14px;">
-                            <?php echo $fila['materia']; ?>
+                            <?php echo $fila['fuente']; ?>
                         </span>
                     </td>
-                    <td> <?php echo $fila['nombre'];?></td>
-                    <td> <?php echo $fila['descr'];?></td>
-                    <td> <?php echo $fila['deadline'];?></td>
+                     <td> <a href="<?php echo $fila['enlace'];?>"><?php echo $fila['titulo'];?></a></td>
+                 
                     <td>
-                        <form action="tareahecha.php" method="POST">
+                        <form action="infonohecho.php" method="POST">
                             <input type="hidden" name="id" value="<?php echo $fila['id']; ?>">
-                            <button type="submit", class = "botoninside">Hecho</button>   
-                        </form>
-                    </td>
-                    <td>
-                        <form action="edittarea.php" method="POST">
-                            <input type="hidden" name="id" value="<?php echo $fila['id']; ?>">
-                            <button type="submit", class = "botoninside">Editar</button>   
+                            <button type="submit", class = "botoninside">No hecho</button>   
                         </form>
                     </td>
                 </tr>

@@ -10,15 +10,14 @@ if($con->connect_error){
     die("Conexion fallida: ". $con->connect->error );
 }
 
-//$sql="SELECT * FROM problema INNER JOIN concurso ON problema.id_conc=concurso.id_conc INNER JOIN usuario ON problema.id_usuario=usuario.id_user LEFT JOIN tag_problema ON tag_problema.id_pr = problema.id_pr ORDER BY problema.id_pr";
+$sql="SELECT distinct(unit) FROM sat";
 
-$sql = "SELECT 
-            tarea.id_tarea AS id, tarea.nombre AS nombre, tarea.descr AS descr, tarea.fechalim AS deadline, tarea.hecho AS hecho, tipo.nombre AS materia, tipo.color AS color
-        FROM tarea
-        INNER JOIN tipo ON tarea.id_tipo=tipo.id_tipo 
-        WHERE hecho=true
-        ORDER BY deadline DESC";
 $result= $con->query($sql);
+
+$stmt = $con->prepare("SELECT * FROM sat WHERE unit = ?");
+if(!$stmt){
+    die("Error al preparar la consulta: " . $con->error);
+}
 
 ?>
 
@@ -74,9 +73,36 @@ $result= $con->query($sql);
                 background-color: #000000;
                 color: white;
             }
+            .grande td {
+                font-size: 1.5em; 
+                font-weight: bold; 
+            }
+
+            .btn {
+    padding: 16px 20px;
+    border-radius: 10px;
+    border: 2px solid #6b21a8; 
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  .btn-si {
+    background-color: #6b21a8; 
+    color: white;
+  }
+
+  .btn-no {
+    background-color: white;
+    color: #6b21a8; 
+  }
+
+  .btn:hover {
+    opacity: 0.85;
+  }
         </style>
     </head>
     <body>
+   
        
         <div style="display:flex; justify-content:center; gap:10px">
             <form action="main.php" method="post">
@@ -88,54 +114,65 @@ $result= $con->query($sql);
              <form action="info.php" method="post">
                 <input type="submit" value="Problemas info" class="boton">
             </form>
-            <form action="sat.php" method="post">
+             <form action="sat.php" method="post">
                 <input type="submit" value="SAT" class="boton">
             </form>
+        </div>
+        
+        <div style="display:flex; justify-content:center; gap:10px">
+            <form action="agregartarea.php" method="post">
+                <input type="submit" value="Agregar Tarea" class="boton">
+            </form>
+         
 
         </div>
-
-
+        
+    
          <table>
             <tr>
-                <th> Materia </th>
-                <th> Nombre </th>
-                <th> Descripcion </th>
-                <th> Deadline </th>
-                <th> No hecho </th>
-                <th> Eliminar </th>
+                <th> Unidad </th>
+                <th> L1 </th>
+                <th> L2 </th>
+                <th> L3 </th>
+                <th> L4 </th>
+                <th> L5 </th>
+                <th> L6 </th>
+                <th> L7 </th>
+                <th> L8 </th>
+                <th> L9 </th>
+                <th> L10 </th>
+                <th> L11 </th>
+                <th> L12 </th>
 
             </tr>
+
+            
+
             <?php while($fila=$result->fetch_assoc()){?>
-
+                
                 <tr>
+                    <td> Unit <?php echo $fila['unit']; ?></td>
+                  <?php 
+                    $stmt->bind_param("i", $fila['unit']);
+                     $stmt->execute();
+                    $result2 = $stmt->get_result();
+                    while($fila2=$result2->fetch_assoc()){?>
                     <td>
-                        <span style="
-                            display:inline-block; 
-                            background-color: <?php echo $fila['color']; ?>; 
-                            color: white; 
-                            padding: 5px 12px; 
-                            border-radius: 8px;
-                            font-family: Arial, sans-serif;
-                            font-size: 14px;">
-                            <?php echo $fila['materia']; ?>
-                        </span>
-                    </td>
-                    <td> <?php echo $fila['nombre'];?></td>
-                    <td> <?php echo $fila['descr'];?></td>
-                    <td> <?php echo $fila['deadline'];?></td>
-                    <td>
-                        <form action="tareanohecha.php" method="POST">
-                            <input type="hidden" name="id" value="<?php echo $fila['id']; ?>">
-                            <button type="submit", class = "botoninside">No hecho</button>   
+                        <form action="cambiarsat.php" method="POST">
+                            <input type="hidden" name="id" value="<?php echo $fila2['id_sat']; ?>">
+                            <input type="hidden" name="mandar" value="<?php echo $fila2['hecho']; ?>">
+                             <button type="submit", class = "
+                               <?php
+                                if($fila2['hecho']) echo "btn btn-si";
+                                else echo "btn btn-no"; 
+                            ?>
+                             
+                             "></button> 
+                           
+                             
                         </form>
                     </td>
-
-                    <td>
-                        <form action="eliminartarea.php" method="POST">
-                            <input type="hidden" name="id" value="<?php echo $fila['id']; ?>">
-                            <button type="submit", class = "botoninside">Eliminar</button>   
-                        </form>
-                    </td>
+                   <?php }?>
                 </tr>
 
             <?php }?>
